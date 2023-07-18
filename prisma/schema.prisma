@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:root@localhost:3306/myapp"
+}
+
+model User{
+  id Int @id @default(autoincrement())
+  username String
+  password String
+  male Boolean
+  picture String?
+  nip String?
+  nuptk String
+  birthdate DateTime
+  login Login?
+  school School? @relation(fields: [schoolId], references: [id])
+  schoolId Int?
+  absen Absen[]
+}
+
+model Login{
+  id String @id @default(uuid())
+  exp DateTime
+  user User @relation(fields: [userId], references: [id])
+  userId Int @unique
+}
+
+model School{
+  id Int @id
+  name String
+  // regis Registration[]
+  teachers User[]
+  absen Absen[]
+}
+
+// model Registration{
+//   id Int @id
+//   createdAt DateTime @default(now())
+//   scool School @relation(fields: [schoolId], references: [id])
+//   schoolId Int
+// }
+
+model Absen{
+  date DateTime @id @default(now())
+  type AbsenType
+  school School @relation(fields: [schoolId], references: [id])
+  schoolId Int
+  teacher User @relation(fields: [teacherId],references: [id])
+  teacherId Int
+}
+
+enum AbsenType{
+  Arrive
+  Leave
+}
