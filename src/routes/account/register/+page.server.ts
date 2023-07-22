@@ -1,35 +1,36 @@
 import { prisma } from "$lib/db";
-import { MinMaxInputLen, NotEmptyString, Validator } from "$lib/form_validations";
-import { fail, type Actions } from "@sveltejs/kit";
-
-function notUndefinedOrNull<T>(...inputs: T[]){
-    return inputs.reduce((prev, curr)=> curr !== null || curr !== undefined, true)
-}
-
-function objPropsToArray<T>(obj: {[key: string]: T}): T[]{
-    let prev: T[] = [];
-    return Object.keys(obj).reduce((prev, curr) => [obj[curr], ...prev], prev)
-}
+import type { Actions } from "@sveltejs/kit";
+import {data} from "./helper"
 
 export const actions: Actions = {
     default: async (ev) => {
-        let is_valid = Validator(MinMaxInputLen(5, 20), NotEmptyString(true))
-        let form = await ev.request.formData()
-        let data = {
-            username: form.get("username")?.toString(),
-            password: form.get("password")?.toString(),
-            birthdate: form.get("birthdate")?.toString(),
-            nip: form.get("nip")?.toString(),
-            nuptk: form.get("nuptk")?.toString(),
-        }
-        const gagal = (message: string) => fail(302, {data, message})
-        if(!notUndefinedOrNull(...objPropsToArray(data))) return gagal("fill all required input");
-        else{
-            if(!is_valid.all(...objPropsToArray(data) as string[])) return gagal("invalid input");
-            
+        let success = false;
+        let message = "failed"
+        let form = await ev.request.formData();
+        if(data.check(form)){
+            if(await prisma.user.findFirst({where: {username: data.values.username as string}})){
+                message = "username already used"
+            }else{
+                let user = await prisma.user.create({data: {
+                    username: data.values.username as string,
+                    password: data.values.password as string,
+                    birthdate: new Date(data.values.birthdate as string),
+                    gender: data.values.gender as any,
+                    nuptk: data.values.nuptk as string,
+                    nip: data.values.nip as string|null,
+                }})
+                console.log(user);
+                success = true
+                message = "Sukses!!"
+            }
+        }else{
+            console.log(data.errors);
         }
         return {
-            message: "Sukses!!"
+            success,
+            message,
+            values: data.values,
+            errors: data.errors
         }
     }
 }
