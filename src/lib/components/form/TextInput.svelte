@@ -15,8 +15,9 @@
 
     function update() {
         input.setCustomValidity('')
-        if(input.value.length <= 0 && required){
-            error = "required"
+        if(input.value.length <= 0){
+            if(required) error = "required";
+            else error = null;
             return
         }
         for (const func of validators) {
@@ -31,12 +32,12 @@
     onMount(() => {
         input.value = value;
         if (input.form) {
-            input.form.addEventListener("submit", (ev) => {
-                if(error){
+            input.form.addEventListener('submit', ev => {
+                if(error) {
                     ev.preventDefault()
                     input.setCustomValidity(error)
-                };
-            });
+                }
+            })
         }
     });
 </script>

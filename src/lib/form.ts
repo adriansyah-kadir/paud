@@ -2,30 +2,43 @@ type Validator<T> = (arg0: T) => string|null
 
 type Option = {
     required: boolean,
-    type: string,
+    type: 'text'|'file',
     validators: Validator<any>[]
 }
 
-type RequiredOrNot<T, K> = T extends true ? K : K|null
-
-export class FormValidator<T extends Record<string, Option>>{
+export class FormValidator<T extends Record<string, Partial<Option>>>{
     errors: Record<keyof T, string|null>
     values: {
-        [K in keyof T]: RequiredOrNot<T[K]['required'], string|File>
+        [K in keyof T]: T[K]['type'] extends 'file' ? File|null : string|null
     }
     checked = false;
+    opts: Record<keyof T, Option>
     
-    constructor(public opts: T){
+    constructor(opts: T){
         this.errors = {} as any
         this.values = {} as any
-        this.eachKey(key => {
-            this.errors[key] = null
-            this.values[key] = null as any
-        })
+        this.opts = {} as any
+        for (const key in opts) {
+            this.errors[key] = null;
+            this.values[key] = null;
+            this.opts[key] = {...{
+                required: false,
+                type: 'text',
+                validators: []
+            }, ...opts[key]}
+        }
+    }
+
+    getValues(): {
+        [K in keyof T]: T[K]['required'] extends true ? NonNullable<FormValidator<T>['values'][K]> : FormValidator<T>['values'][K]
+    }{
+        if(!this.checked) throw "form is not checked";
+        return this.values as any;
     }
 
     check(form: FormData){
         this.reset()
+        this.checked = true;
         this.eachKey(key=>{
             let ipt = form.get(key.toString())
             let opt = this.opts[key]
@@ -37,7 +50,7 @@ export class FormValidator<T extends Record<string, Option>>{
             }
         })
         for (const key in this.errors) {
-            if(this.errors[key] === null) return false;
+            if(this.errors[key] !== null) return false;
         }
         return true;
     }
@@ -73,6 +86,7 @@ export class FormValidator<T extends Record<string, Option>>{
     }
 
     protected reset(){
+        this.checked = false;
         this.eachKey(k => {
             this.errors[k] = null
             this.values[k] = null as any

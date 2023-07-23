@@ -1,13 +1,19 @@
 <script lang="ts">
     import Toast from "$lib/components/Toast.svelte";
-    import TextInput from "$lib/components/form/TextInput.svelte";
+import TextInput from "$lib/components/form/TextInput.svelte";
     import type { ActionData } from "./$types";
+    import { createValidator } from "./helper";
 
     export let form: ActionData;
 
+    let validator = createValidator();
     let inputclass =
         "transition-all border bg-white ring-0 hover:ring ring-blue-300 p-2";
 </script>
+
+{#if form}
+    <Toast label="Notif" message={form.message}/>
+{/if}
 
 <div class="h-full w-full flex flex-col items-center justify-center p-3">
     <form
@@ -20,14 +26,21 @@
         <TextInput
             class={inputclass}
             name="username"
-            type="float"
             placeholder="username"
+            required={validator.opts.username.required}
+            validators={validator.opts.username.validators}
+            value={form?.values.username?.toString()}
+            error={form?.errors.username}
         />
         <TextInput
+            value={form?.values.password?.toString()}
             class={inputclass}
+            error={form?.errors.username}
             name="password"
-            type="float"
+            type="password"
             placeholder="password"
+            required={validator.opts.password.required}
+            validators={validator.opts.password.validators}
         />
         <button class="btn btn-primary btn-lg">login</button>
     </form>

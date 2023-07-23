@@ -9,12 +9,12 @@ export let data = new FormValidator({
     },
     password: {
         required: true,
-        type: 'password',
+        type: 'text',
         validators: [NotEmpty, StringMinMax(5, 20)]
     },
     birthdate: {
         required: true,
-        type: 'datetime-local',
+        type: 'text',
         validators: [StringValidDateFormat]
     },
     nip: {
@@ -29,7 +29,7 @@ export let data = new FormValidator({
     },
     gender: {
         required: true,
-        type: 'radio',
+        type: 'text',
         validators: [StringBetween("Female", "Male")]
     }
 })

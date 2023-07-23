@@ -11,7 +11,7 @@ export const actions: Actions = {
             if(await prisma.user.findFirst({where: {username: data.values.username as string}})){
                 message = "username already used"
             }else{
-                let user = await prisma.user.create({data: {
+                let _ = await prisma.user.create({data: {
                     username: data.values.username as string,
                     password: data.values.password as string,
                     birthdate: new Date(data.values.birthdate as string),
@@ -19,12 +19,9 @@ export const actions: Actions = {
                     nuptk: data.values.nuptk as string,
                     nip: data.values.nip as string|null,
                 }})
-                console.log(user);
                 success = true
                 message = "Sukses!!"
             }
-        }else{
-            console.log(data.errors);
         }
         return {
             success,
